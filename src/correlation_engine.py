@@ -3,6 +3,7 @@ from collections import defaultdict
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import ipaddress
 import json
 
 
@@ -19,10 +20,27 @@ class CorrelationAlert:
 
 
 def parse_time(value: str) -> datetime:
+    """
+    Parse an ISO 8601 timestamp.
+
+    Timezone-aware timestamps are normalized to UTC.
+    Timezone-naive timestamps retain their original local clock time.
+    No timezone is invented for recorded dataset events.
+    """
     dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+
     if dt.tzinfo is None:
-        raise ValueError("Timestamp must include timezone")
+        return dt
+
     return dt.astimezone(timezone.utc)
+
+
+def is_loopback_address(value: str) -> bool:
+    """Return True if the source is an IPv4 or IPv6 loopback address."""
+    try:
+        return ipaddress.ip_address(value).is_loopback
+    except ValueError:
+        return False
 
 
 def correlate_failed_logins(
@@ -30,7 +48,23 @@ def correlate_failed_logins(
     threshold: int = 5,
     window_minutes: int = 5,
 ) -> list[CorrelationAlert]:
-    """Detect clusters of failed logins by source IP and host."""
+    """
+    Correlate repeated Windows Event ID 4625 authentication failures.
+
+    Events are grouped by source IP, host, and timestamp context.
+
+    Timezone-naive and timezone-aware events are kept separate to
+    avoid invalid datetime comparisons.
+
+    Correlation indicates repeated authentication failures.
+    It does not independently prove malicious activity.
+    """
+    if threshold < 1:
+        raise ValueError("threshold must be at least 1")
+
+    if window_minutes <= 0:
+        raise ValueError("window_minutes must be positive")
+
     groups = defaultdict(list)
 
     for event in events:
@@ -44,18 +78,34 @@ def correlate_failed_logins(
         if not all([ip, host, timestamp]):
             continue
 
-        try:
-            event_time = parse_time(timestamp)
-        except (ValueError, TypeError):
+        if not isinstance(ip, str) or not isinstance(host, str):
             continue
 
-        groups[(ip, host)].append(event_time)
+        ip = ip.strip()
+        host = host.strip()
+
+        if not ip or not host:
+            continue
+
+        try:
+            event_time = parse_time(timestamp)
+        except (ValueError, TypeError, AttributeError):
+            continue
+
+        time_context = (
+            "unknown_local"
+            if event_time.tzinfo is None
+            else "utc"
+        )
+
+        groups[(ip, host, time_context)].append(event_time)
 
     alerts = []
     window = timedelta(minutes=window_minutes)
 
-    for (ip, host), times in groups.items():
+    for (ip, host, time_context), times in groups.items():
         times.sort()
+
         left = 0
         best = None
 
@@ -69,32 +119,45 @@ def correlate_failed_logins(
                 if best is None or count > best[0]:
                     best = (count, times[left], current)
 
-        if best:
-            count, first, last = best
-            alerts.append(
-                CorrelationAlert(
-                    rule_id="SOC-003",
-                    title="Repeated Failed Authentication",
-                    severity="high" if count >= 10 else "medium",
-                    source_ip=ip,
-                    host=host,
-                    failed_attempts=count,
-                    first_seen=first.isoformat(),
-                    last_seen=last.isoformat(),
-                )
+        if best is None:
+            continue
+
+        count, first, last = best
+
+        if is_loopback_address(ip):
+            title = "Repeated Local Authentication Failures"
+            severity = "low"
+        else:
+            title = "Repeated Failed Authentication"
+            severity = "high" if count >= 10 else "medium"
+
+        alerts.append(
+            CorrelationAlert(
+                rule_id="SOC-003",
+                title=title,
+                severity=severity,
+                source_ip=ip,
+                host=host,
+                failed_attempts=count,
+                first_seen=first.isoformat(),
+                last_seen=last.isoformat(),
             )
+        )
 
     return alerts
 
 
 def main():
     path = Path("datasets/correlation_events.json")
-    events = json.loads(path.read_text(encoding="utf-8"))
+
+    events = json.loads(
+        path.read_text(encoding="utf-8")
+    )
 
     alerts = correlate_failed_logins(events)
 
     if not alerts:
-        print("No correlated threats detected.")
+        print("No correlated authentication alerts detected.")
 
     for alert in alerts:
         print(json.dumps(asdict(alert), indent=2))
