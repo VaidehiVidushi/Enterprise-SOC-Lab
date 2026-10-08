@@ -1,0 +1,83 @@
+[
+  {
+    "rule_id": "SOC-001",
+    "title": "Failed Windows Authentication",
+    "severity": "low",
+    "evidence": {
+      "user": "testuser",
+      "source_ip": "192.0.2.15"
+    }
+  },
+  {
+    "rule_id": "SOC-002",
+    "title": "PowerShell Process Execution",
+    "severity": "informational",
+    "evidence": {
+      "image": "c:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe",
+      "command_line": "powershell.exe -EncodedCommand TEST_PLACEHOLDER"
+    }
+  },
+  {
+    "rule_id": "SOC-004",
+    "title": "Suspicious PowerShell Command",
+    "severity": "high",
+    "evidence": {
+      "image": "c:\\windows\\system32\\windowspowershell\\v1.0\\powershell.exe",
+      "command_line": "powershell.exe -EncodedCommand TEST_PLACEHOLDER",
+      "indicators": [
+        "encoded_command"
+      ]
+    }
+  },
+  {
+    "rule_id": "SOC-005",
+    "title": "Windows User Account Created",
+    "severity": "medium",
+    "evidence": {
+      "user": "labadmin",
+      "target_user": "temporaryuser",
+      "host": "WIN-LAB-01"
+    }
+  },
+  {
+    "rule_id": "SOC-006",
+    "title": "Local Security Group Membership Changed",
+    "severity": "high",
+    "evidence": {
+      "group": "Administrators",
+      "member": "temporaryuser",
+      "host": "WIN-LAB-01",
+      "privileged_group_indicator": true
+    }
+  },
+  {
+    "rule_id": "SOC-007",
+    "title": "Process Executed from Suspicious Directory",
+    "severity": "medium",
+    "evidence": {
+      "image": "C:\\Users\\Public\\unknown.exe",
+      "command_line": "unknown.exe",
+      "host": "WIN-LAB-01"
+    }
+  },
+  {
+    "rule_id": "SOC-008",
+    "title": "Outbound Connection to Globally Routable IP",
+    "severity": "informational",
+    "evidence": {
+      "destination_ip": "8.8.8.8",
+      "destination_port": 443,
+      "image": "C:\\Windows\\System32\\curl.exe"
+    }
+  },
+  {
+    "rule_id": "SOC-009",
+    "title": "File Created in Windows Startup Directory",
+    "severity": "medium",
+    "evidence": {
+      "target_filename": "C:\\Users\\testuser\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\example.lnk",
+      "image": "C:\\Windows\\System32\\cmd.exe",
+      "host": "WIN-LAB-01"
+    }
+  }
+]

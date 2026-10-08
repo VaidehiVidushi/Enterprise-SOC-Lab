@@ -1,0 +1,53 @@
+
+[
+  {
+    "source": "windows-security",
+    "event_id": 4625,
+    "host": "WIN-LAB-01",
+    "user": "testuser",
+    "source_ip": "192.0.2.15"
+  },
+  {
+    "source": "sysmon",
+    "event_id": 1,
+    "host": "WIN-LAB-01",
+    "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "command_line": "powershell.exe -EncodedCommand TEST_PLACEHOLDER"
+  },
+  {
+    "source": "windows-security",
+    "event_id": 4720,
+    "host": "WIN-LAB-01",
+    "user": "labadmin",
+    "target_user": "temporaryuser"
+  },
+  {
+    "source": "windows-security",
+    "event_id": 4732,
+    "host": "WIN-LAB-01",
+    "group": "Administrators",
+    "member": "temporaryuser"
+  },
+  {
+    "source": "windows-security",
+    "event_id": 4688,
+    "host": "WIN-LAB-01",
+    "image": "C:\\Users\\Public\\unknown.exe",
+    "command_line": "unknown.exe"
+  },
+  {
+    "source": "sysmon",
+    "event_id": 3,
+    "host": "WIN-LAB-01",
+    "image": "C:\\Windows\\System32\\curl.exe",
+    "destination_ip": "8.8.8.8",
+    "destination_port": 443
+  },
+  {
+    "source": "sysmon",
+    "event_id": 11,
+    "host": "WIN-LAB-01",
+    "image": "C:\\Windows\\System32\\cmd.exe",
+    "target_filename": "C:\\Users\\testuser\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\example.lnk"
+  }
+]
