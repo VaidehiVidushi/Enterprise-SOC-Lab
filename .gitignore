@@ -24,3 +24,6 @@ Thumbs.db
 
 # Runtime logs
 *.log
+
+# Downloaded raw security datasets
+datasets/raw/
