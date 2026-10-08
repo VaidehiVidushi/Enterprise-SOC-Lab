@@ -1,0 +1,21 @@
+
+[
+  {
+    "event_id": 4625,
+    "host": "WIN-LAB-01",
+    "user": "testuser",
+    "source_ip": "192.0.2.15"
+  },
+  {
+    "event_id": 1,
+    "host": "WIN-LAB-01",
+    "user": "testuser",
+    "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "command_line": "powershell.exe Get-Date"
+  },
+  {
+    "event_id": 4624,
+    "host": "WIN-LAB-01",
+    "user": "testuser"
+  }
+]

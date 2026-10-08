@@ -1,0 +1,25 @@
+{
+  "case_id": "INC-4B411A79732F",
+  "created_at": "2026-10-08T19:35:05.192388+00:00",
+  "title": "Repeated Failed Authentication",
+  "severity": "medium",
+  "status": "Open",
+  "host": "WIN-LAB-01",
+  "source_ip": "192.0.2.15",
+  "event_count": 5,
+  "mitre_attack": [
+    "T1110 - Brute Force"
+  ],
+  "recommended_actions": [
+    "Review authentication logs for the source IP.",
+    "Check whether successful logins followed failures.",
+    "Validate whether the activity was authorized.",
+    "Escalate confirmed suspicious activity."
+  ],
+  "evidence": {
+    "rule_id": "SOC-003",
+    "first_seen": "2026-10-09T10:00:00+00:00",
+    "last_seen": "2026-10-09T10:02:00+00:00",
+    "failed_attempts": 5
+  }
+}
