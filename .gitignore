@@ -27,3 +27,5 @@ Thumbs.db
 
 # Downloaded raw security datasets
 datasets/raw/
+
+reports/real_windows_soc_report.json
